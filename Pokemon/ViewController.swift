@@ -39,10 +39,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                     anno.coordinate = coord
                     let randLat = (Double(arc4random_uniform(200)) - 100.0) / 50000.0
                     let randLon = (Double(arc4random_uniform(200)) - 100.0) / 50000.0
-
+                    
                     anno.coordinate.latitude += randLat
                     anno.coordinate.longitude += randLon
-                
+                    
                     self.mapView.addAnnotation(anno)
                 }
             })
@@ -58,7 +58,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         let annoView = MKAnnotationView(annotation: annotation, reuseIdentifier: nil)
         
         
-
+        
         if annotation is MKUserLocation {
             annoView.image = UIImage(named: "player")
         } else {
@@ -78,7 +78,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         if updateCount < 6 {
-            let region = MKCoordinateRegionMakeWithDistance(manager.location!.coordinate, 500, 500)
+            let region = MKCoordinateRegionMakeWithDistance(manager.location!.coordinate, 300, 300)
             
             mapView.setRegion(region, animated: false)
             updateCount += 1
@@ -88,9 +88,37 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         
     }
     
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        mapView.deselectAnnotation(view.annotation!, animated: true)
+        
+        if view.annotation is MKUserLocation {
+            return
+        }
+        
+        let region = MKCoordinateRegionMakeWithDistance(view.annotation!.coordinate, 300, 300)
+        
+        mapView.setRegion(region, animated: false)
+        
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { (timer) in
+            if let coord = self.manager.location?.coordinate {
+                if MKMapRectContainsPoint(mapView.visibleMapRect, MKMapPointForCoordinate(coord)) {
+                    print("can catch")
+                    
+                    let pokemon = (view.annotation as! PokeAnnotation).pokemon
+                    pokemon.caught = true
+                    (UIApplication.shared.delegate as! AppDelegate).saveContext()
+                } else {
+                    print("pokemon is too far away")
+                }
+            }
+        })
+        
+        
+    }
+    
     @IBAction func centerTapped(_ sender: Any) {
         if let coord = manager.location?.coordinate {
-            let region = MKCoordinateRegionMakeWithDistance(coord, 400, 400)
+            let region = MKCoordinateRegionMakeWithDistance(coord, 300, 300)
             mapView.setRegion(region, animated: true)
         }
     }

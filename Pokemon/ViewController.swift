@@ -24,6 +24,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             print("Ready to go!")
             mapView.showsUserLocation = true
             manager.startUpdatingLocation()
+            
         } else {
             manager.requestWhenInUseAuthorization()
         }
@@ -46,7 +47,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBAction func centerTapped(_ sender: Any) {
         if let coord = manager.location?.coordinate {
-            let region = MKCoordinateRegionMakeWithDistance(manager.location!.coordinate, 400, 400)
+            let region = MKCoordinateRegionMakeWithDistance(coord, 400, 400)
             mapView.setRegion(region, animated: true)
         }
     }

@@ -25,6 +25,20 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             mapView.showsUserLocation = true
             manager.startUpdatingLocation()
             
+            Timer.scheduledTimer(withTimeInterval: 5, repeats: true, block: { (timer) in
+                //Spawn new Pokemon
+                if let coord = self.manager.location?.coordinate {
+                    let anno = MKPointAnnotation()
+                    anno.coordinate = coord
+                    let randLat = (Double(arc4random_uniform(200)) - 100.0) / 50000.0
+                    let randLon = (Double(arc4random_uniform(200)) - 100.0) / 50000.0
+
+                    anno.coordinate.latitude += randLat
+                    anno.coordinate.longitude += randLon
+                
+                    self.mapView.addAnnotation(anno)
+                }
+            })
         } else {
             manager.requestWhenInUseAuthorization()
         }

@@ -9,7 +9,7 @@
 import UIKit
 import MapKit
 
-class ViewController: UIViewController, CLLocationManagerDelegate {
+class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
     
     @IBOutlet weak var mapView: MKMapView!
     
@@ -24,14 +24,18 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         manager.delegate = self
         if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-            print("Ready to go!")
+            
+            mapView.delegate = self
             mapView.showsUserLocation = true
             manager.startUpdatingLocation()
             
             Timer.scheduledTimer(withTimeInterval: 5, repeats: true, block: { (timer) in
                 //Spawn new Pokemon
                 if let coord = self.manager.location?.coordinate {
-                    let anno = MKPointAnnotation()
+                    
+                    let pokemon = self.pokemons[Int(arc4random_uniform(UInt32(self.pokemons.count)))]
+                    
+                    let anno = PokeAnnotation(coord: coord, pokemon: pokemon)
                     anno.coordinate = coord
                     let randLat = (Double(arc4random_uniform(200)) - 100.0) / 50000.0
                     let randLon = (Double(arc4random_uniform(200)) - 100.0) / 50000.0
@@ -49,10 +53,32 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         mapView.showsUserLocation = true
     }
     
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        
+        let annoView = MKAnnotationView(annotation: annotation, reuseIdentifier: nil)
+        
+        
+
+        if annotation is MKUserLocation {
+            annoView.image = UIImage(named: "player")
+        } else {
+            let pokemon = (annotation as! PokeAnnotation).pokemon
+            annoView.image = UIImage(named: pokemon.imageName!)
+        }
+        
+        var frame = annoView.frame
+        frame.size.height = 50
+        frame.size.width = 50
+        annoView.frame = frame
+        
+        return annoView
+    }
+    
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         if updateCount < 6 {
-            let region = MKCoordinateRegionMakeWithDistance(manager.location!.coordinate, 400, 400)
+            let region = MKCoordinateRegionMakeWithDistance(manager.location!.coordinate, 500, 500)
             
             mapView.setRegion(region, animated: false)
             updateCount += 1
